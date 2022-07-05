@@ -1,6 +1,5 @@
-C:\Users\Amirhossein\Desktop\Uni\GIT\Neuroscience\Python\Data_subj\
-*.npy
-*.m
-*.h5
 /Python/Talairach/chebfun
-
+/Writings
+/Python/Data_subj
+*.pyc
+*.h5

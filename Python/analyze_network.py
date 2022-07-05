@@ -1,3 +1,4 @@
+from tabnanny import verbose
 import tensorflow as tf 
 import numpy as np
 import os
@@ -5,6 +6,7 @@ import matplotlib.pyplot as plt
 import load_best
 from subject_wise_loader import data_subject, load_time, load_talairach
 from visualize_tal import plot_coordinates
+from tqdm import tqdm
 
 cwd = os.path.dirname(os.path.abspath(__file__))+'\\'
 
@@ -34,9 +36,9 @@ def find_max_channel_activity(subj_index, treshhold = None, visualize_filters = 
         treshhold = 0.1
     else:
         pass
-    for channel in range(xtest.shape[-1]):
+    for channel in tqdm(range(xtest.shape[-1])):
         modified = only_channel(xtest, channel)
-        predicts = model.predict(modified)
+        predicts = model.predict(modified, verbose=0)
         for ind in range(len(predicts)):
             if correct_inds[ind] and np.max(predicts[ind])>treshhold:
                 outs.append([ind, channel])
@@ -65,7 +67,7 @@ def find_max_channel_activity(subj_index, treshhold = None, visualize_filters = 
         os.makedirs(directory)
 
     plt.bar(np.linspace(1, xtest.shape[-1], xtest.shape[-1]),c)
-    plt.savefig(directory + 'All_channels_activity.png')
+    plt.savefig(directory + f'All_channels_activity_treshhold( {treshhold} ).png')
     plt.close()
     # plt.show() 
     
@@ -76,13 +78,15 @@ def find_max_channel_activity(subj_index, treshhold = None, visualize_filters = 
     print('Top indices: ',idx,'\n')
     print('\nTop talairach coordinates:\n',talairach[idx])
     for ind, i in enumerate(talairach[idx]):
-        plot_coordinates(i,input_coordinate = 'tal', colored = True, save_path = directory + f'{ind}_top.png')
+        plot_coordinates(i,input_coordinate = 'tal', colored = True, save_path = directory + f'{ind+1}_top_treshhold( {treshhold} ).png')
 
-def main(subj_index):
+def main(subj_index, treshhold = None, visualize_filters = False):
     try:
-        find_max_channel_activity(subj_index)
+        find_max_channel_activity(subj_index, treshhold=treshhold, visualize_filters=visualize_filters)
     except ValueError:
         print("The model is not confident enough or the treshhold is way too high.")
 
-for subj_index in range(11):
-    main(subj_index)
+treshholds = np.linspace(0.1,0.9,9)
+for i in range(len(treshholds)):
+    for subj_index in range(11):
+        main(subj_index, treshhold = treshholds[i])
