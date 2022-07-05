@@ -67,18 +67,18 @@ def find_max_channel_activity(subj_index, treshhold = None, visualize_filters = 
         os.makedirs(directory)
 
     plt.bar(np.linspace(1, xtest.shape[-1], xtest.shape[-1]),c)
-    plt.savefig(directory + f'All_channels_activity_treshhold( {treshhold} ).png')
+    plt.savefig(directory + f'All_channels_activity_treshhold( {round(treshhold, 4)} ).png')
     plt.close()
     # plt.show() 
     
     top_k = 5
     idx = (-c).argsort()[:top_k]
     talairach = load_talairach(subj_index)
-
+    idx = idx[idx<len(talairach)]
     print('Top indices: ',idx,'\n')
     print('\nTop talairach coordinates:\n',talairach[idx])
     for ind, i in enumerate(talairach[idx]):
-        plot_coordinates(i,input_coordinate = 'tal', colored = True, save_path = directory + f'{ind+1}_top_treshhold( {treshhold} ).png')
+        plot_coordinates(i,input_coordinate = 'tal', colored = True, save_path = directory + f'{ind+1}_top_treshhold( {round(treshhold, 4)} ).png')
 
 def main(subj_index, treshhold = None, visualize_filters = False):
     try:
@@ -86,7 +86,8 @@ def main(subj_index, treshhold = None, visualize_filters = False):
     except ValueError:
         print("The model is not confident enough or the treshhold is way too high.")
 
-treshholds = np.linspace(0.1,0.9,9)
-for i in range(len(treshholds)):
-    for subj_index in range(11):
-        main(subj_index, treshhold = treshholds[i])
+if __name__ == "__main__":
+    treshholds = np.linspace(0,1,21)
+    for i in range(len(treshholds)):
+        for subj_index in range(11):
+            main(subj_index, treshhold = treshholds[i])

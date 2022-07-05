@@ -21,3 +21,6 @@ def load_time(subj_index):
 def load_talairach(subj_index):
     i = ids[subj_index]
     return np.load(load_path+f'talairach_subj{i}.npy')
+
+# treshholds = np.linspace(0,1,21)
+# print(treshholds)
