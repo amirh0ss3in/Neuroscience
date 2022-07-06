@@ -14,10 +14,10 @@ def ttv_kfold(X,Y,return_fold, k=5,seed=42):
             val_indexs.append(val_index)
 
         train_indexs , val_indexs = np.array(train_indexs) , np.array(val_indexs)
-        xtrain = X[train_indexs[return_fold]]
-        ytrain = Y[train_indexs[return_fold]]
-        xval = X[val_indexs[return_fold]]
-        yval = Y[val_indexs[return_fold]]
+        xtrain = x_[train_indexs[return_fold]]
+        ytrain = y_[train_indexs[return_fold]]
+        xval = x_[val_indexs[return_fold]]
+        yval = y_[val_indexs[return_fold]]
 
         return xtrain, ytrain, xval, yval, xtest, ytest
 

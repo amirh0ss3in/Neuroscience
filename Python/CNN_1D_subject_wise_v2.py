@@ -74,9 +74,9 @@ def main(subj_number, fold, max_trials = 100, epochs = 100):
 
     hist_callback = tf.keras.callbacks.TensorBoard(
     log_dir=log_dir,
-    histogram_freq=0,
+    histogram_freq=1,
     embeddings_freq=0,
-    write_graph=False,
+    write_graph=True,
     write_images=False,
     write_steps_per_second=False,
     update_freq='epoch')
