@@ -114,5 +114,5 @@ def main(subj_number, fold, max_trials = 100, epochs = 100):
 
 if __name__ == "__main__":
     for subj_number in range(11):
-        for fold in range(5):
+        for fold in range(1,6):
             main(subj_number, fold)
