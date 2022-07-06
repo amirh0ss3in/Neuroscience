@@ -1,6 +1,8 @@
 /Python/Talairach/chebfun
 /Writings
 /Python/Data_subj
+/Python/trial_logs
+/Python/Subject Wise
 *.pyc
 *.h5
 *.rar
