@@ -87,4 +87,4 @@ def main(subj_index,fold):
 
 # for subj_index in range(11):
 #     main(subj_index)
-main(3, fold = 2)
+# main(3, fold = 2)
