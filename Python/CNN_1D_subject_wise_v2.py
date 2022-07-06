@@ -7,6 +7,7 @@ from keras_tuner import BayesianOptimization
 from sklearn.metrics import classification_report, confusion_matrix
 from pathlib import Path
 from kf import ttv_kfold
+import keras.backend as K
 
 cwd = os.path.dirname(os.path.abspath(__file__))+'\\'
 
@@ -73,9 +74,11 @@ def main(subj_number, fold, max_trials = 100, epochs = 100):
 
     hist_callback = tf.keras.callbacks.TensorBoard(
     log_dir=log_dir,
-    histogram_freq=1,
-    embeddings_freq=1,
+    histogram_freq=0,
+    embeddings_freq=0,
     write_graph=False,
+    write_images=False,
+    write_steps_per_second=False,
     update_freq='epoch')
 
     tuner_bo = BayesianOptimization(
