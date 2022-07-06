@@ -23,8 +23,6 @@ def find_max_channel_activity(subj_index, fold, treshhold = None, visualize_filt
     time = load_time(subj_index)
     X, Y = data_subject(subj_index)
     xtrain, ytrain, xval, yval, xtest, ytest = ttv_kfold(X,Y,return_fold= fold)
-    ytest = yval
-    xtest = xval
     ypred = np.argmax(best_model.predict(xtest),axis=1)
     correct_inds = [ypred[i] == ytest[i] for i in range(len(ytest))]
     input_shape = xtest.shape[1:]
