@@ -8,6 +8,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from pathlib import Path
 from kf import ttv_kfold
 import keras.backend as K
+import tensorflow_addons as tfa
 
 cwd = os.path.dirname(os.path.abspath(__file__))+'\\'
 
@@ -18,11 +19,19 @@ def build_model(hp):
     """Builds a convolutional model."""
     inputs = tf.keras.Input(shape=input_shape)
     x = inputs
-    for i in range(hp.Int("conv_layers", 2, 5, default=3)): 
+    act_lu_choice = hp.Choice("act_lu", ["relu", "leaky relu", "Gelu"], default='leaky relu')
+    if act_lu_choice == 'relu':
+        act_lu = tf.keras.layers.ReLU
+    elif act_lu_choice == 'leaky relu':
+        act_lu = tf.keras.layers.LeakyReLU
+    elif act_lu_choice == 'Gelu':
+        act_lu = tfa.layers.GELU
+
+    for i in range(hp.Int("conv_layers", 2, 6, default=3)): 
         x = tf.keras.layers.Conv1D(
             filters=hp.Int("filters_" + str(i), 32, 1024, step=32, default=512),
             kernel_size=hp.Int("kernel_size_" + str(i), 5, 18, default=12),
-            activation='relu',
+            activation=act_lu(),
             padding="same",
         )(x)
 
@@ -32,7 +41,7 @@ def build_model(hp):
             x = tf.keras.layers.AveragePooling1D()(x)
 
         x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.ReLU()(x)
+        x = act_lu()(x)
 
     if hp.Choice("global_pooling", ["max", "avg"]) == "max":
         x = tf.keras.layers.GlobalMaxPooling1D()(x)
@@ -43,7 +52,7 @@ def build_model(hp):
     outputs = tf.keras.layers.Dense(n_class, activation=act)(x)
 
     model = tf.keras.Model(inputs, outputs)
-    learning_rate = hp.Float("learning_rate", 1e-4, 1e-3, sampling="log", default=4e-4)
+    learning_rate = hp.Float("learning_rate", 1e-5, 1e-2, sampling="log", default=4e-4)
     optimizer = tf.keras.optimizers.Adam(learning_rate=tf.Variable(learning_rate), clipnorm=1.)
     model.compile(
         optimizer, loss="categorical_crossentropy", metrics=["accuracy"]
@@ -90,7 +99,7 @@ def main(subj_number, fold, max_trials = 100, epochs = 100):
                 
             )
 
-    tuner_bo.search(xtrain, ytrain, validation_data=(xval, yval), batch_size=64, epochs=epochs, verbose=1, callbacks = [hist_callback])
+    tuner_bo.search(xtrain, ytrain, validation_data=(xval, yval), batch_size=32, epochs=epochs, verbose=1, callbacks = [hist_callback])
     best_model = tuner_bo.get_best_models(num_models=1)[0]
     best_model.evaluate(xtest, ytest)
     best_model.save(cwd+'Subject wise\\'+f'CNN_1D_1_subj{ids[subj_number]}\\'+f'best_model_fold{fold}.h5')

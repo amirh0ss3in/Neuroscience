@@ -3,8 +3,7 @@ import os
 import numpy as np
 
 cwd = os.path.dirname(os.path.abspath(__file__))+'/'
-cwd = cwd.replace('\\', '/')
-path_listdir = os.listdir(cwd + '../data/IFP/')
+path_listdir = os.listdir(cwd+'../data/IFP')
 
 for i in range(20):
     if f'subj{i}' in path_listdir:
