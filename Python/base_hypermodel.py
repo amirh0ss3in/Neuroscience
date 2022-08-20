@@ -48,8 +48,8 @@ class BaseHyperModel(kt.HyperModel):
             activation_choice_pooling=hp.Choice("act_pooling_" + str(i), ["ReLU", "Swish", "Mish"], default="ReLU")
             x = activation_dict[activation_choice_pooling](x)
         
-        global_dict = {"global_max_pooling": tf.keras.layers.GlobalMaxPooling1D(), "global_average_pooling": tf.keras.layers.GlobalAveragePooling1D()}
-        x = global_dict[hp.Choice("pooling_global", ["global_max_pooling", "global_average_pooling"], default="global_max_pooling")](x)
+        global_dict = {"global_max_pooling": tf.keras.layers.GlobalMaxPooling1D(), "global_average_pooling": tf.keras.layers.GlobalAveragePooling1D(), "Flatten": tf.keras.layers.Flatten()}
+        x = global_dict[hp.Choice("pooling_global", ["global_max_pooling", "global_average_pooling", "Flatten"], default="global_max_pooling")](x)
 
         for j in range(n_dense_layers):
             activation_choice_dense_in=hp.Choice("act_dense_in_"+ str(j), ["ReLU", "Swish", "Mish"], default="ReLU")

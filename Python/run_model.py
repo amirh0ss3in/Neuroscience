@@ -65,14 +65,16 @@ def main(SUBJ_INDEX, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIALS, BE
     print('SUBJ_INDEX: ', SUBJ_INDEX)
 
 
-NUM_EPOCHS = 70
+NUM_EPOCHS = 30
 BATCH_SIZE = 32
-NUM_INITIAL_POINTS = 20
+NUM_INITIAL_POINTS = 100
 MAX_TRIALS = 200
 BETA = 15
 ALPHA = 0.01
 OBJECTIVE = kt.Objective('val_f1_score', direction='max')
-SUBJ_INDEX = 1
+# OBJECTIVE = kt.Objective(' val_fbeta_score', direction='max')
+# OBJECTIVE = kt.Objective('val_accuracy', direction='max')
+SUBJ_INDEX = 0
 
 if __name__ == '__main__':
     main(SUBJ_INDEX,
