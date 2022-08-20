@@ -23,7 +23,9 @@ def main(Normalize = True):
     plt.rcParams['font.family'] = 'Times New Roman' 
 
     # load confusion matrixs
-    categories = ['1', '2', '3', '4', '7']
+    # categories = ['1', '2', '3', '4', '7']
+    categories=['animals','chairs','human faces','fruits','vehicles']
+    
     reports_path = cwd+"Archive/Subject wise/reports"
     subjects = np.sort(np.array(os.listdir(reports_path), dtype = int))
 
