@@ -3,7 +3,8 @@
 /Python/Data_subj
 /Python/trial_logs
 /Python/Subject Wise
-/Python/New Subject Wise
+/Python/New Subject wise
+
 *.pyc
 *.h5
 *.rar
