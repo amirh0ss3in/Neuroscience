@@ -7,11 +7,12 @@ from sklearn.metrics import classification_report, confusion_matrix
 import tensorflow as tf
 
 cwd = os.path.dirname(os.path.abspath(__file__))+'/'
+cwd = cwd.replace('\\','/')
 
-def main(SUBJ_INDEX, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIALS, BETA, ALPHA, OBJECTIVE, SEED = 42):
+def main(SUBJ_INDEX, FOLD, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIALS, BETA, ALPHA, OBJECTIVE, SEED = 42):
     ids = [1,3,4,6,7,8,9,10,12,17,18]
     
-    xtrain, xtest, ytrain, ytest = stratified_split(SUBJ_INDEX, return_fold=1, k=5, seed=SEED)
+    xtrain, xtest, ytrain, ytest = stratified_split(SUBJ_INDEX, return_fold=FOLD, k=5, seed=SEED)
 
     # preprocess data
     ytrain[ytrain == 7] = 5
@@ -35,7 +36,7 @@ def main(SUBJ_INDEX, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIALS, BE
                 num_initial_points=NUM_INITIAL_POINTS,
                 alpha = ALPHA,
                 beta= BETA,
-                project_name=cwd+'Subject wise\\'+f'CNN_1D_1_subj{ids[SUBJ_INDEX]}'
+                project_name=cwd+'New Subject wise/'+f'CNN_1D_1_subj{ids[SUBJ_INDEX]}'
             )
 
     # print(xtest.shape, ytest.shape, xtrain.shape, ytrain.shape)
@@ -43,12 +44,12 @@ def main(SUBJ_INDEX, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIALS, BE
     tuner_bo.search(xtrain, ytrain, validation_data=(xtest, ytest), batch_size= BATCH_SIZE, epochs=NUM_EPOCHS, verbose=2)
     best_model = tuner_bo.get_best_models(num_models=1)[0]
     best_model.evaluate(xtest, ytest)
-    best_model.save(cwd+'Subject wise/'+f'CNN_1D_1_subj{ids[SUBJ_INDEX]}/'+'best_model.h5')
+    best_model.save(cwd+'New Subject wise/'+f'CNN_1D_1_subj{ids[SUBJ_INDEX]}/'+'best_model.h5')
 
     ytest_pred = best_model.predict(xtest)
     ytest = np.argmax(ytest, axis=1)
     ytest_pred = np.argmax(ytest_pred, axis=1)
-    log_path = cwd+'Subject wise/'+f'CNN_1D_1_subj{ids[SUBJ_INDEX]}/'
+    log_path = cwd+'New Subject wise/'+f'CNN_1D_1_subj{ids[SUBJ_INDEX]}/'
 
     print(confusion_matrix(ytest,ytest_pred))
     print(ytest_pred.shape)
@@ -65,19 +66,23 @@ def main(SUBJ_INDEX, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIALS, BE
     print('SUBJ_INDEX: ', SUBJ_INDEX)
 
 
-NUM_EPOCHS = 30
-BATCH_SIZE = 32
-NUM_INITIAL_POINTS = 100
-MAX_TRIALS = 200
+NUM_EPOCHS = 150
+BATCH_SIZE = 16
+NUM_INITIAL_POINTS = 150
+MAX_TRIALS = 250
 BETA = 15
 ALPHA = 0.01
-OBJECTIVE = kt.Objective('val_f1_score', direction='max')
+# OBJECTIVE = kt.Objective('val_f1_score', direction='max')
 # OBJECTIVE = kt.Objective(' val_fbeta_score', direction='max')
-# OBJECTIVE = kt.Objective('val_accuracy', direction='max')
-SUBJ_INDEX = 0
+OBJECTIVE = kt.Objective('val_accuracy', direction='max')
+
+
+SUBJ_INDEX = 3
+FOLD = 1
 
 if __name__ == '__main__':
     main(SUBJ_INDEX,
+         FOLD,
          NUM_EPOCHS, 
          BATCH_SIZE, 
          NUM_INITIAL_POINTS, 
