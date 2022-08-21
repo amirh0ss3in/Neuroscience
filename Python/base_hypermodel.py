@@ -20,8 +20,6 @@ class BaseHyperModel(kt.HyperModel):
 
     def build(self, hp):
 
-        SEED=42
-
         conv_layers_min=6
         conv_layers_max=9
         conv_layers_default=8
@@ -43,8 +41,6 @@ class BaseHyperModel(kt.HyperModel):
         excluded_pool_layer_ratio=0.4
         excluded_pool_layer_default=2
 
-        pooling_size_min=2
-        pooling_size_max=3
         pooling_size_default=2
 
         # For convolution block
@@ -63,7 +59,6 @@ class BaseHyperModel(kt.HyperModel):
 
         kernel_constraint=3.
 
-        dropout_SEED=SEED
 
         learning_rate_min=1e-4
         learning_rate_max=2e-2
@@ -74,22 +69,17 @@ class BaseHyperModel(kt.HyperModel):
         n_layers = hp.Int("conv_layers", conv_layers_min, conv_layers_max, default=conv_layers_default)
         n_dense_layers = hp.Int("dense_layers", dense_layers_min, dense_layers_max, default=dense_layers_default)
 
-        # pooling_dict = {"max":tf.keras.layers.MaxPooling1D(), "avg":tf.keras.layers.AveragePooling1D()}
-        # normalization_dict = {"batch":tf.keras.layers.BatchNormalization, "layer":tf.keras.layers.LayerNormalization, "instance":tfa.layers.InstanceNormalization, "group":tfa.layers.GroupNormalization}
         activation_dict = {"ReLU": tf.keras.activations.relu, "GELU":tf.keras.activations.gelu, "ELU":tf.keras.activations.elu, "SELU":tf.keras.activations.selu, "SoftPlus":tf.keras.activations.softplus, "Swish":tf.keras.activations.swish, "Mish":tfa.activations.mish}
 
         for i in range(n_layers):
-            # activation_choice_Conv=hp.Choice("act_Conv_"+ str(i), ["ReLU", "Swish", "Mish", "ELU", "SELU", "SoftPlus"], default="ReLU")
             activation_choice_Conv=hp.Choice("act_Conv_"+ str(i), ["ReLU", "Swish", "Mish"], default="ReLU")
             x = tf.keras.layers.Conv1D(
                 filters=hp.Int("filters_" + str(i), filters_min, filters_max, step=filters_step, default=filters_default),
                 kernel_size=hp.Int("kernel_size_" + str(i), kernel_size_min, kernel_size_max, step=kernel_size_step, default=kernel_size_default),
                 activation=activation_dict[activation_choice_Conv],
-                # activation='relu',
                 padding='same',
             )(x)
 
-            # The layer numbers in these if conditions are dependent on the size of input
             if 12 < n_layers:
                 excluded_pool_layer = np.round(excluded_pool_layer_ratio*n_layers)
             elif 11 < n_layers <= 12:
@@ -101,35 +91,23 @@ class BaseHyperModel(kt.HyperModel):
 
             if i < n_layers-excluded_pool_layer :
                 pooling_choice = hp.Choice("pooling_" + str(i), ["max", "avg"])
-                # x = pooling_dict[pooling_choice](x)
-                # pooling_size_choice = hp.Int("pooling_size_" + str(i), pooling_size_min, pooling_size_max, default=pooling_size_default)
                 pooling_size_choice = pooling_size_default
                 if pooling_choice == "max":
                     x = tf.keras.layers.MaxPooling1D(pool_size=pooling_size_choice)(x)
                 else:
                     x = tf.keras.layers.AveragePooling1D(pool_size=pooling_size_choice)(x)
-
-            # normalization_choice = hp.Choice("normalization_" + str(i), ["batch", "layer", "group", "instance", "dropout"], default="dropout")
             normalization_choice = hp.Choice("normalization_" + str(i), ["batch", "layer", "instance"], default="batch")
             
             if normalization_choice == "batch":
                 x = tf.keras.layers.BatchNormalization()(x)
             elif normalization_choice == "layer":
                 x = tf.keras.layers.LayerNormalization()(x)
-            # # elif normalization_choice == "group":
-            # #     x = tfa.layers.GroupNormalization(groups = 32)(x)
             elif normalization_choice == "instance":
                 x = tfa.layers.InstanceNormalization()(x)
-            # else:
-
-            # x = normalization_dict[normalization_choice]()(x)
 
             dropout_ratio = hp.Float("dropout_" + str(i), dropout_min, dropout_max, default=dropout_default)
-            # x = tf.keras.layers.Dropout(dropout_ratio, seed=dropout_SEED)(x)
             x = tf.keras.layers.Dropout(dropout_ratio)(x)
-                # print('dropout_ratio', dropout_ratio)
         
-            # activation_choice_pooling=hp.Choice("act_pooling_" + str(i), ["ReLU", "Swish", "Mish", "ELU", "SELU", "SoftPlus"], default="ReLU")
             activation_choice_pooling=hp.Choice("act_pooling_" + str(i), ["ReLU", "Swish", "Mish"], default="ReLU")
             x = activation_dict[activation_choice_pooling](x)
 
@@ -139,13 +117,10 @@ class BaseHyperModel(kt.HyperModel):
         x = global_dict[hp.Choice("pooling_global", ["global_max_pooling", "global_average_pooling", "Flatten"], default="global_max_pooling")](x)
 
         for j in range(n_dense_layers):
-            # activation_choice_dense_in=hp.Choice("act_dense_in_"+ str(j), ["ReLU", "Swish", "Mish", "ELU", "SELU", "SoftPlus"], default="ReLU")
             activation_choice_dense_in=hp.Choice("act_dense_in_"+ str(j), ["ReLU", "Swish", "Mish"], default="ReLU")
             x = tf.keras.layers.Dense(hp.Int("dense_neurons_" + str(j), dense_neurons_min, dense_neurons_max, step=dense_neurons_step, default=dense_neurons_default), activation=activation_dict[activation_choice_dense_in], kernel_constraint=tf.keras.constraints.max_norm(kernel_constraint))(x)
-            # x = tf.keras.layers.Dropout(hp.Float("dropout_dense_" + str(j), dropout_dense_min, dropout_dense_max, default=dropout_dense_default), seed=dropout_SEED)(x)
             x = tf.keras.layers.Dropout(hp.Float("dropout_dense_" + str(j), dropout_dense_min, dropout_dense_max, default=dropout_dense_default))(x)
             x = tf.keras.layers.BatchNormalization()(x)
-            # activation_choice_dense_out=hp.Choice("act_dense_out"+ str(j), ["ReLU", "Swish", "Mish", "ELU", "SELU", "SoftPlus"], default="ReLU")
             activation_choice_dense_out=hp.Choice("act_dense_out_"+ str(j), ["ReLU", "Swish", "Mish"], default="ReLU")
             x = activation_dict[activation_choice_dense_out](x)
 
@@ -155,7 +130,6 @@ class BaseHyperModel(kt.HyperModel):
 
         learning_rate = hp.Float("learning_rate", learning_rate_min, learning_rate_max, sampling="log", default=learning_rate_default)
         optimizer = tf.keras.optimizers.Adam(learning_rate=tf.Variable(learning_rate), clipnorm=1.)
-        # optimizer = tf.keras.optimizers.Adam(learning_rate=tf.Variable(learning_rate))
         model.compile(
             optimizer, loss="categorical_crossentropy", metrics=["accuracy"] 
             # tfa.metrics.FBetaScore(num_classes=self.n_class, beta=2.0, threshold=0.5, average = 'weighted'),
