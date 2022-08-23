@@ -124,7 +124,8 @@ class BaseHyperModel(kt.HyperModel):
             activation_choice_dense_out=hp.Choice("act_dense_out_"+ str(j), ["ReLU", "Swish", "Mish"], default="ReLU")
             x = activation_dict[activation_choice_dense_out](x)
 
-        outputs = tf.keras.layers.Dense(self.n_class, activation="softmax")(x)
+        output_act = hp.Choice("output_act", ["softmax", "sigmoid"] , default="softmax")
+        outputs = tf.keras.layers.Dense(self.n_class, activation=output_act)(x)
 
         model = tf.keras.Model(inputs, outputs)
 

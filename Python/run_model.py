@@ -5,6 +5,8 @@ import os
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
 import tensorflow as tf
+from imblearn.over_sampling import SMOTE 
+from imbalanced_learn import iBL
 
 cwd = os.path.dirname(os.path.abspath(__file__))+'/'
 cwd = cwd.replace('\\','/')
@@ -19,6 +21,9 @@ def main(SUBJ_INDEX, FOLD, NUM_EPOCHS , BATCH_SIZE, NUM_INITIAL_POINTS, MAX_TRIA
     ytest[ytest == 7] = 5
     ytrain = ytrain - 1
     ytest = ytest - 1
+
+    # balance the training dataset
+    xtrain, ytrain = iBL(xtrain, ytrain, SMOTE)
 
     input_shape = xtrain.shape[1:]
     n_class = len(set(ytest.flatten())|set(ytrain.flatten()))
